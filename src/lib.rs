@@ -3,10 +3,7 @@ mod screen;
 mod speaker;
 
 use esp_idf_hal::{
-    gpio::{
-        Gpio10, Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, Output,
-        PinDriver,
-    },
+    gpio::{Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, PinDriver},
     ledc::{CHANNEL0, TIMER0},
     prelude::Peripherals,
     uart::{UartConfig, UartDriver},
@@ -53,11 +50,6 @@ impl<'a> M5Go<'a> {
         let dc = peripherals.pins.gpio27;
         let reset = peripherals.pins.gpio33;
 
-        // screen_reset.set_low()?;
-        // FreeRtos::delay_ms(100);
-        // screen_reset.set_high()?;
-        // FreeRtos::delay_ms(100);
-
         let screen = Screen::new(cs, sdo, sclk, dc, reset, blk, peripherals.spi2);
 
         // Leds
@@ -77,29 +69,6 @@ impl<'a> M5Go<'a> {
             screen,
             port_c,
             speaker,
-        })
-    }
-}
-
-pub struct M5CoreInk<'a> {
-    pub button_right: PinDriver<'a, Gpio39, Input>,
-    pub button_press: PinDriver<'a, Gpio38, Input>,
-    pub button_left: PinDriver<'a, Gpio37, Input>,
-    pub led: PinDriver<'a, Gpio10, Output>,
-}
-
-impl<'a> M5CoreInk<'a> {
-    pub fn new(peripherals: Peripherals) -> anyhow::Result<Self> {
-        let button_right = PinDriver::input(peripherals.pins.gpio39)?;
-        let button_press = PinDriver::input(peripherals.pins.gpio38)?;
-        let button_left = PinDriver::input(peripherals.pins.gpio37)?;
-        let led = PinDriver::output(peripherals.pins.gpio10)?;
-
-        Ok(Self {
-            button_right,
-            button_press,
-            button_left,
-            led,
         })
     }
 }
