@@ -29,8 +29,9 @@ impl Leds {
         self.lights.insert(index, color);
     }
 
-    pub fn clear(&mut self) {
+    pub fn off(&mut self) {
         self.lights = std::iter::repeat(RGB8::default()).take(10).collect();
+        self.display();
     }
 
     pub fn fill(&mut self, color: RGB8) {

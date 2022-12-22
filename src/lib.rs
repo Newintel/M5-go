@@ -3,10 +3,13 @@ mod screen;
 mod speaker;
 
 use esp_idf_hal::{
-    gpio::{Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, PinDriver},
+    gpio::{
+        Gpio10, Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, Output,
+        PinDriver,
+    },
     ledc::{CHANNEL0, TIMER0},
     prelude::Peripherals,
-    uart::{config::Config as UartConfig, UartDriver},
+    uart::{UartConfig, UartDriver},
     units::Hertz,
 };
 
@@ -78,6 +81,29 @@ impl<'a> M5Go<'a> {
     }
 }
 
+pub struct M5CoreInk<'a> {
+    pub button_right: PinDriver<'a, Gpio39, Input>,
+    pub button_press: PinDriver<'a, Gpio38, Input>,
+    pub button_left: PinDriver<'a, Gpio37, Input>,
+    pub led: PinDriver<'a, Gpio10, Output>,
+}
+
+impl<'a> M5CoreInk<'a> {
+    pub fn new(peripherals: Peripherals) -> anyhow::Result<Self> {
+        let button_right = PinDriver::input(peripherals.pins.gpio39)?;
+        let button_press = PinDriver::input(peripherals.pins.gpio38)?;
+        let button_left = PinDriver::input(peripherals.pins.gpio37)?;
+        let led = PinDriver::output(peripherals.pins.gpio10)?;
+
+        Ok(Self {
+            button_right,
+            button_press,
+            button_left,
+            led,
+        })
+    }
+}
+
 #[derive(Clone, Copy)]
 pub enum Note {
     C = 4186,
@@ -99,4 +125,9 @@ impl Note {
     pub fn octave(self, octave: u8) -> u32 {
         (self as u32) / (1 << (8 - octave))
     }
+}
+
+pub enum Delay {
+    Us(u32),
+    Ms(u32),
 }

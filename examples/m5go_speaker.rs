@@ -4,7 +4,7 @@ use embedded_graphics::{
     text::Alignment,
 };
 use esp_idf_hal::prelude::Peripherals;
-use m5_go::Note;
+use m5_go::{Delay, Note};
 
 fn main() {
     esp_idf_sys::link_patches();
@@ -114,8 +114,11 @@ fn main() {
                 if m5.button_a.is_low() {
                     break 'block;
                 }
-                m5.speaker
-                    .do_sound(note.octave(octave), (500f32 * speed) as u32, None);
+                m5.speaker.do_sound(
+                    note.octave(octave),
+                    Delay::Ms((500f32 * speed) as u32),
+                    Some(5),
+                );
             }
         }
     };

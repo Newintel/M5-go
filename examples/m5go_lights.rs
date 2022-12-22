@@ -13,7 +13,7 @@ fn main() -> anyhow::Result<()> {
     loop {
         for color in colors {
             for index in 0..10 {
-                m5.leds.clear();
+                m5.leds.off();
                 m5.leds.set_color_at_index(index, color);
                 m5.leds.display();
                 FreeRtos::delay_ms(100);
