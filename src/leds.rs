@@ -38,3 +38,24 @@ impl Leds {
         self.lights = vec![color; 10]
     }
 }
+
+pub trait WithBrightness<T: Sized> {
+    fn with_brightness(self, brightness: T) -> Self;
+}
+
+impl WithBrightness<u16> for RGB8 {
+    fn with_brightness(mut self, brightness: u16) -> Self {
+        self.r = (self.r as u16 * brightness / 255) as u8;
+        self.g = (self.g as u16 * brightness / 255) as u8;
+        self.b = (self.b as u16 * brightness / 255) as u8;
+        self
+    }
+}
+impl WithBrightness<u8> for RGB8 {
+    fn with_brightness(mut self, brightness: u8) -> Self {
+        self.r = (self.r as u16 * brightness as u16 / 255) as u8;
+        self.g = (self.g as u16 * brightness as u16 / 255) as u8;
+        self.b = (self.b as u16 * brightness as u16 / 255) as u8;
+        self
+    }
+}

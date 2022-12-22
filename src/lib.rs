@@ -1,6 +1,9 @@
+mod io;
 mod leds;
 mod screen;
 mod speaker;
+
+pub use leds::WithBrightness;
 
 use esp_idf_hal::{
     gpio::{Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, PinDriver},
@@ -9,6 +12,7 @@ use esp_idf_hal::{
     uart::{UartConfig, UartDriver},
     units::Hertz,
 };
+use io::IOPort;
 
 use leds::Leds;
 use screen::Screen;
@@ -20,6 +24,7 @@ pub struct M5Go<'a> {
     pub button_c: PinDriver<'a, Gpio37, Input>,
     pub leds: Leds,
     pub screen: Screen<'a, Gpio27, Gpio33, Gpio32>,
+    pub port_b: IOPort<'a>,
     pub port_c: UartDriver<'a>,
     pub speaker: Speaker<Gpio25, CHANNEL0, TIMER0>,
 }
@@ -36,6 +41,12 @@ impl<'a> M5Go<'a> {
             None as Option<Gpio8>,
             &port_c_config,
         )?;
+
+        // Port B
+        let io_b = peripherals.pins.gpio26;
+        let input_b = peripherals.pins.gpio36;
+        let adc1 = peripherals.adc1;
+        let port_b = IOPort::new(io_b, input_b, adc1)?;
 
         // Buttons
         let button_a = PinDriver::input(peripherals.pins.gpio39)?;
@@ -69,6 +80,7 @@ impl<'a> M5Go<'a> {
             screen,
             port_c,
             speaker,
+            port_b,
         })
     }
 }
