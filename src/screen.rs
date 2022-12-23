@@ -1,5 +1,6 @@
 use display_interface_spi::SPIInterfaceNoCS;
 use embedded_graphics::{
+    image::{Image, ImageRawBE},
     mono_font::{ascii::FONT_10X20, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::{DrawTarget, Point},
@@ -101,5 +102,11 @@ impl<'a, DC: OutputPin, RST: OutputPin, BL: OutputPin> Screen<'a, DC, RST, BL> {
         text_drawable
             .draw(&mut self.driver)
             .expect(format!("Draw text '{text}' in position {position} failed").as_str())
+    }
+
+    pub fn draw_image(&mut self, data: &[u8], width: u32, position: Point) {
+        let image_raw = ImageRawBE::<Rgb565>::new(data, width);
+        let image = Image::new(&image_raw, position);
+        image.draw(&mut self.driver).expect("Failed drawing image");
     }
 }
