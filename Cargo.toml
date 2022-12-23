@@ -26,6 +26,8 @@ display-interface-spi = "0.4.1"
 embedded-graphics = "0.7.1"
 esp-idf-ble = { git = "https://github.com/Newintel/esp-idf-ble" }
 esp-println = { version = "0.3.1", features = ["esp32"] }
+esp-idf-svc = "0.45.0"
+log = "0.4.17"
 
 [dev-dependencies]
 critical-section = { version = "1.1.1", features = ["std"] }

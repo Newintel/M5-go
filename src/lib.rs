@@ -1,8 +1,11 @@
+mod ble;
 mod io;
 mod leds;
 mod screen;
 mod speaker;
 
+use ble::Ble;
+pub use ble::BleConfig;
 pub use leds::WithBrightness;
 
 use esp_idf_hal::{
@@ -27,6 +30,7 @@ pub struct M5Go<'a> {
     pub port_b: IOPort<'a>,
     pub port_c: UartDriver<'a>,
     pub speaker: Speaker<Gpio25, CHANNEL0, TIMER0>,
+    pub ble: Option<Ble>,
 }
 
 impl<'a> M5Go<'a> {
@@ -81,7 +85,13 @@ impl<'a> M5Go<'a> {
             port_c,
             speaker,
             port_b,
+            ble: None,
         })
+    }
+
+    pub fn setup_ble(&mut self, config: BleConfig) {
+        let ble = Ble::new(config);
+        self.ble = Some(ble);
     }
 }
 
