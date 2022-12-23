@@ -13,10 +13,11 @@ debug = true # Symbols are nice and they don't increase the size on Flash
 opt-level = "z"
 
 [features]
-pio = ["esp-idf-sys/pio"]
+native = ["esp-idf-sys/native"]
+default = ["native"]
 
 [dependencies]
-esp-idf-sys = { version = "0.32.1", features = ["binstart", "std"] }
+esp-idf-sys = { version = "0.32.1", features = ["binstart", "std", "native"] }
 anyhow = "1"
 esp-idf-hal = "0.40.1"
 smart-leds = "0.3.0"
