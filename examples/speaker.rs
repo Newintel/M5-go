@@ -1,4 +1,5 @@
 use embedded_graphics::{
+    mono_font::ascii::FONT_10X20,
     pixelcolor::Rgb565,
     prelude::{Point, RgbColor},
     text::Alignment,
@@ -89,23 +90,28 @@ fn main() {
 
     m5.screen.fill_background(Rgb565::BLACK);
 
+    let font = FONT_10X20;
+
     m5.screen.draw_text(
         "Here is a piece of music :",
         Point::new(0, 15),
         Alignment::Left,
         Rgb565::WHITE,
+        &font,
     );
     m5.screen.draw_text(
         "Ode to Joy",
         Point::new(0, 30),
         Alignment::Left,
         Rgb565::WHITE,
+        &font,
     );
     m5.screen.draw_text(
         "Press button A to stop it",
         Point::new(0, 45),
         Alignment::Left,
         Rgb565::WHITE,
+        &font,
     );
 
     let _ = 'block: {

@@ -14,8 +14,6 @@ fn main() -> anyhow::Result<()> {
 
     let ble = m5.ble.unwrap();
 
-    println!("{:#?}", ble.mac);
-
     ble.start();
 
     loop {

@@ -5,11 +5,7 @@ use esp_idf_ble::{
     GattDescriptor, GattService, GattServiceEvent, ServiceUuid,
 };
 use esp_idf_hal::delay::FreeRtos;
-use esp_idf_svc::{
-    eventloop::EspSystemEventLoop,
-    netif::{EspNetif, NetifStack},
-    nvs::EspDefaultNvsPartition,
-};
+use esp_idf_svc::{eventloop::EspSystemEventLoop, nvs::EspDefaultNvsPartition};
 
 use esp_idf_sys::*;
 
@@ -17,18 +13,6 @@ use log::{info, warn};
 
 pub struct Ble {
     ble: EspBle,
-    pub mac: String,
-}
-
-fn get_mac(mac: [u8; 6]) -> String {
-    let mut mac_str = String::new();
-    for (i, byte) in mac.iter().enumerate() {
-        if i > 0 {
-            mac_str.push(':');
-        }
-        mac_str.push_str(&format!("{:02X}", byte));
-    }
-    mac_str
 }
 
 #[derive(Default)]
@@ -53,11 +37,6 @@ impl BleConfig {
 impl Ble {
     pub fn new(config: BleConfig) -> Self {
         esp_idf_svc::log::EspLogger::initialize_default();
-
-        let netif_stack =
-            Arc::new(EspNetif::new(NetifStack::Sta).expect("Unable to init Netif Stack"));
-
-        let mac = get_mac(netif_stack.get_mac().expect("Unable to get MAC address"));
 
         #[allow(unused)]
         let sys_loop_stack = Arc::new(EspSystemEventLoop::take().expect("Unable to init sys_loop"));
@@ -235,7 +214,7 @@ impl Ble {
         })
         .expect("Failed to configure advertising data");
 
-        Self { ble, mac }
+        Self { ble }
     }
 
     pub fn start(&self) {

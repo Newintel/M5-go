@@ -4,8 +4,11 @@ mod leds;
 mod screen;
 mod speaker;
 
+use std::sync::Arc;
+
 use ble::Ble;
 pub use ble::BleConfig;
+use esp_idf_svc::netif::{EspNetif, NetifStack};
 pub use leds::WithBrightness;
 
 use esp_idf_hal::{
@@ -31,10 +34,27 @@ pub struct M5Go<'a> {
     pub port_c: UartDriver<'a>,
     pub speaker: Speaker<Gpio25, CHANNEL0, TIMER0>,
     pub ble: Option<Ble>,
+    pub mac: String,
+}
+
+fn get_mac(mac: [u8; 6]) -> String {
+    let mut mac_str = String::new();
+    for (i, byte) in mac.iter().enumerate() {
+        if i > 0 {
+            mac_str.push(':');
+        }
+        mac_str.push_str(&format!("{:02X}", byte));
+    }
+    mac_str
 }
 
 impl<'a> M5Go<'a> {
     pub fn new(peripherals: Peripherals) -> anyhow::Result<Self> {
+        let netif_stack =
+            Arc::new(EspNetif::new(NetifStack::Sta).expect("Unable to init Netif Stack"));
+
+        let mac = get_mac(netif_stack.get_mac().expect("Unable to get MAC address"));
+
         // Port C
         let port_c_config = UartConfig::new().baudrate(Hertz(9600));
         let port_c = UartDriver::new(
@@ -86,6 +106,7 @@ impl<'a> M5Go<'a> {
             speaker,
             port_b,
             ble: None,
+            mac,
         })
     }
 

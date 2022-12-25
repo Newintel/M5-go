@@ -1,7 +1,7 @@
 use display_interface_spi::SPIInterfaceNoCS;
 use embedded_graphics::{
     image::{Image, ImageRawBE},
-    mono_font::{ascii::FONT_10X20, MonoTextStyle},
+    mono_font::{MonoFont, MonoTextStyle},
     pixelcolor::Rgb565,
     prelude::{DrawTarget, Point},
     text::{Alignment, Text},
@@ -94,8 +94,9 @@ impl<'a, DC: OutputPin, RST: OutputPin, BL: OutputPin> Screen<'a, DC, RST, BL> {
         position: Point,
         alignment: Alignment,
         color: Rgb565,
+        font: &MonoFont,
     ) -> Point {
-        let character_style = MonoTextStyle::new(&FONT_10X20, color);
+        let character_style = MonoTextStyle::new(font, color);
 
         let text_drawable = Text::with_alignment(text, position, character_style, alignment);
 
