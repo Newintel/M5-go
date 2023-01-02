@@ -1,4 +1,7 @@
-use std::sync::{mpsc::sync_channel, Arc};
+use std::{
+    cell::RefCell,
+    sync::{mpsc::sync_channel, Arc, Mutex, MutexGuard, TryLockError},
+};
 
 use esp_idf_ble::{
     AdvertiseData, AttributeValue, AutoResponse, BtUuid, EspBle, GattCharacteristic,
@@ -13,11 +16,13 @@ use log::{info, warn};
 
 pub struct Ble {
     ble: EspBle,
+    config: Arc<Mutex<RefCell<BleConfig>>>,
 }
 
 #[derive(Default)]
 pub struct BleConfig {
     pub on_receive: Option<Box<dyn Fn(&[u8]) -> Option<String> + Send + Sync>>,
+    commands: Vec<String>,
 }
 
 impl BleConfig {
@@ -31,6 +36,14 @@ impl BleConfig {
     {
         self.on_receive = Some(Box::new(f));
         self
+    }
+
+    pub fn send(&mut self, command: String) {
+        self.commands.push(command);
+    }
+
+    fn next_command(&mut self) -> Option<String> {
+        self.commands.pop()
     }
 }
 
@@ -47,6 +60,10 @@ impl Ble {
         FreeRtos::delay_us(100_u32);
 
         let mut ble = EspBle::new("ESP32".into(), default_nvs).unwrap();
+
+        let config = Arc::new(Mutex::new(RefCell::new(config)));
+        let read_config = Arc::clone(&config);
+        let write_config = Arc::clone(&config);
 
         let (s, r) = sync_channel(1);
 
@@ -136,7 +153,11 @@ impl Ble {
         .expect("Unable to add characteristic");
 
         ble.register_read_handler(char_attr_handle, move |gatts_if, read| {
-            let val = [0x48, 0x65, 0x6c, 0x6c, 0x6f];
+            let val = read_config
+                .try_lock()
+                .ok()
+                .and_then(|config| config.borrow_mut().next_command())
+                .unwrap_or("NONE".to_string());
 
             if let GattServiceEvent::Read(read) = read {
                 esp_idf_ble::send(
@@ -145,7 +166,7 @@ impl Ble {
                     read.conn_id,
                     read.trans_id,
                     esp_gatt_status_t_ESP_GATT_OK,
-                    &val,
+                    &val.as_bytes(),
                 )
                 .expect("Unable to send read response");
             }
@@ -158,7 +179,13 @@ impl Ble {
                 } else {
                     let value =
                         unsafe { std::slice::from_raw_parts(write.value, write.len as usize) };
-                    let back = config.on_receive.as_ref().and_then(|f| f(value));
+                    let back = write_config.try_lock().ok().and_then(|config| {
+                        config
+                            .borrow_mut()
+                            .on_receive
+                            .as_ref()
+                            .and_then(|f| f(value))
+                    });
                     info!(
                         "Write event received for {} with: {:?}",
                         char_attr_handle,
@@ -166,14 +193,16 @@ impl Ble {
                     );
 
                     if write.need_rsp {
+                        let back = back.unwrap_or(String::new());
                         info!("need rsp");
+                        info!("Sending back response: {:?}", back);
                         esp_idf_ble::send(
                             gatts_if,
                             char_attr_handle,
                             write.conn_id,
                             write.trans_id,
                             esp_gatt_status_t_ESP_GATT_OK,
-                            back.unwrap_or(String::new()).as_bytes(),
+                            &back.as_bytes(),
                         )
                         .expect("Unable to send response");
                     }
@@ -214,14 +243,22 @@ impl Ble {
         })
         .expect("Failed to configure advertising data");
 
-        Self { ble }
+        Self { ble, config }
     }
 
-    pub fn start(&self) {
-        self.ble
-            .start_advertise(|_| {
-                info!("advertising started");
-            })
-            .expect("Failed to start advertising");
+    pub fn start(&self) -> Result<(), EspError> {
+        self.ble.start_advertise(|_| {
+            info!("advertising started");
+        })
+    }
+
+    pub fn send(
+        &self,
+        command: String,
+    ) -> Result<(), TryLockError<MutexGuard<'_, RefCell<BleConfig>>>> {
+        self.config.try_lock().and_then(|config| {
+            config.borrow_mut().send(command);
+            Ok(())
+        })
     }
 }

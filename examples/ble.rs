@@ -1,5 +1,5 @@
 use esp_idf_hal::{delay::FreeRtos, prelude::Peripherals};
-use m5_go::{BleConfig, M5Go};
+use m5_go::{ble::BleConfig, M5Go};
 
 fn main() -> anyhow::Result<()> {
     esp_idf_sys::link_patches();
@@ -10,13 +10,20 @@ fn main() -> anyhow::Result<()> {
 
     let config = BleConfig::new()
         .on_receive(|str| Some(format!("Received: {}", String::from_utf8_lossy(str))));
+
     m5.setup_ble(config);
 
     let ble = m5.ble.unwrap();
 
-    ble.start();
+    ble.start()?;
+
+    println!("mac : {}", m5.mac);
 
     loop {
-        FreeRtos::delay_ms(1000);
+        if m5.button_a.is_low() {
+            println!("message sent");
+            ble.send("Hello from M5Go!".to_string()).unwrap();
+        }
+        FreeRtos::delay_ms(100);
     }
 }

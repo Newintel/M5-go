@@ -1,4 +1,4 @@
-mod ble;
+pub mod ble;
 mod io;
 mod leds;
 mod screen;
@@ -6,8 +6,7 @@ mod speaker;
 
 use std::sync::Arc;
 
-use ble::Ble;
-pub use ble::BleConfig;
+use ble::{Ble, BleConfig};
 use esp_idf_svc::netif::{EspNetif, NetifStack};
 pub use leds::WithBrightness;
 
