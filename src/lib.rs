@@ -12,6 +12,7 @@ pub use leds::WithBrightness;
 
 use esp_idf_hal::{
     gpio::{Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, PinDriver},
+    i2c::{I2cConfig, I2cDriver},
     ledc::{CHANNEL0, TIMER0},
     prelude::Peripherals,
     uart::{UartConfig, UartDriver},
@@ -29,6 +30,7 @@ pub struct M5Go<'a> {
     pub button_c: PinDriver<'a, Gpio37, Input>,
     pub leds: Leds,
     pub screen: Screen<'a, Gpio27, Gpio33, Gpio32>,
+    pub port_a: I2cDriver<'a>,
     pub port_b: IOPort<'a>,
     pub port_c: UartDriver<'a>,
     pub speaker: Speaker<Gpio25, CHANNEL0, TIMER0>,
@@ -53,6 +55,13 @@ impl<'a> M5Go<'a> {
             Arc::new(EspNetif::new(NetifStack::Sta).expect("Unable to init Netif Stack"));
 
         let mac = get_mac(netif_stack.get_mac().expect("Unable to get MAC address"));
+
+        let i2c = peripherals.i2c0;
+        let sda = peripherals.pins.gpio21;
+        let scl = peripherals.pins.gpio22;
+
+        let config = I2cConfig::new();
+        let port_a = I2cDriver::new(i2c, sda, scl, &config)?;
 
         // Port C
         let port_c_config = UartConfig::new().baudrate(Hertz(9600));
@@ -101,9 +110,10 @@ impl<'a> M5Go<'a> {
             button_c,
             leds,
             screen,
+            port_a,
+            port_b,
             port_c,
             speaker,
-            port_b,
             ble: None,
             mac,
         })

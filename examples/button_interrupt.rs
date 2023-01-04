@@ -46,14 +46,14 @@ fn on_button_a_pushed() {
 }
 
 fn on_button_b_pushed() {
-    esp_println::println!("button c pushed");
+    esp_println::println!("button b pushed");
     critical_section::with(|cs| {
         COLOR_INDEX.replace_with(cs, |old| if *old == 0 { 0 } else { *old - 1 });
     })
 }
 
 fn on_button_c_pushed() {
-    esp_println::println!("button b pushed");
+    esp_println::println!("button c pushed");
     critical_section::with(|cs| {
         COLOR_INDEX.replace_with(cs, |old| if *old == u32::MAX { *old } else { *old + 1 });
     })
