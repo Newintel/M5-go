@@ -1,14 +1,13 @@
 pub mod ble;
-mod io;
-mod leds;
-mod screen;
-mod speaker;
+pub mod io;
+pub mod leds;
+pub mod screen;
+pub mod speaker;
 
 use std::sync::Arc;
 
 use ble::{Ble, BleConfig};
 use esp_idf_svc::netif::{EspNetif, NetifStack};
-pub use leds::WithBrightness;
 
 use esp_idf_hal::{
     gpio::{Gpio25, Gpio27, Gpio32, Gpio33, Gpio37, Gpio38, Gpio39, Gpio8, Input, PinDriver},

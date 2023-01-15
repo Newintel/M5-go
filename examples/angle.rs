@@ -1,7 +1,7 @@
 use esp_idf_hal::{delay::FreeRtos, prelude::Peripherals};
 use smart_leds::colors::WHITE;
 
-use m5_go::{M5Go, WithBrightness};
+use m5_go::{leds::WithBrightness, M5Go};
 
 const MAX_READ: u16 = 4095;
 
