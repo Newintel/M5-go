@@ -4,8 +4,8 @@ use embedded_graphics::{
     prelude::{Point, RgbColor},
     text::Alignment,
 };
-use esp_idf_hal::prelude::Peripherals;
-use m5_go::{Delay, Note};
+use esp_idf_hal::{delay::FreeRtos, prelude::Peripherals};
+use m5_go::{speaker::Speaker, Note};
 
 fn main() {
     esp_idf_sys::link_patches();
@@ -120,11 +120,16 @@ fn main() {
                 if m5.button_a.is_low() {
                     break 'block;
                 }
-                m5.speaker.do_sound(
-                    note.octave(octave),
-                    Delay::Ms((500f32 * speed) as u32),
-                    Some(5),
-                );
+                let mut speaker =
+                    Speaker::speaker_from_struct(&mut m5.speaker, note.octave(octave));
+                speaker.set_duty(1).unwrap();
+
+                FreeRtos::delay_ms((500f32 * speed) as u32);
+
+                speaker.disable().ok().or_else(|| {
+                    println!("Error stopping sound");
+                    None
+                });
             }
         }
     };

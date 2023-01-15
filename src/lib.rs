@@ -146,8 +146,3 @@ impl Note {
         (self as u32) / (1 << (8 - octave))
     }
 }
-
-pub enum Delay {
-    Us(u32),
-    Ms(u32),
-}
