@@ -30,18 +30,20 @@ where
         }
     }
 
-    pub fn speaker_from_struct(speaker: &mut Self, freq: u32) -> LedcDriver<'_>
+    pub fn speaker_from_struct(speaker: &mut Self, freq: u32) -> Option<LedcDriver<'_>>
     where
         C: Peripheral<P = C>,
         T: Peripheral<P = T>,
     {
         let config = TimerConfig::new().frequency(Hertz(freq));
-        let driver = LedcTimerDriver::new(speaker.timer.borrow_mut(), &config).unwrap();
-        LedcDriver::new(
-            speaker.channel.borrow_mut(),
-            driver,
-            speaker.pin.borrow_mut(),
-        )
-        .unwrap()
+        LedcTimerDriver::new(speaker.timer.borrow_mut(), &config)
+            .and_then(|timer_driver| {
+                LedcDriver::new(
+                    speaker.channel.borrow_mut(),
+                    timer_driver,
+                    speaker.pin.borrow_mut(),
+                )
+            })
+            .ok()
     }
 }

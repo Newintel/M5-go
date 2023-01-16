@@ -121,7 +121,7 @@ fn main() {
                     break 'block;
                 }
                 let mut speaker =
-                    Speaker::speaker_from_struct(&mut m5.speaker, note.octave(octave));
+                    Speaker::speaker_from_struct(&mut m5.speaker, note.octave(octave)).unwrap();
                 speaker.set_duty(1).unwrap();
 
                 FreeRtos::delay_ms((500f32 * speed) as u32);
