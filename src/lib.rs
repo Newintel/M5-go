@@ -20,19 +20,31 @@ use esp_idf_hal::{
 use io::IOPort;
 
 use leds::Leds;
-use screen::Screen;
+use screen::{Screen, ScreenDriver};
 use speaker::Speaker;
 
+pub type ButtonType<'a, T> = PinDriver<'a, T, Input>;
+
+pub type ButtonAType<'a> = ButtonType<'a, Gpio39>;
+pub type ButtonBType<'a> = ButtonType<'a, Gpio38>;
+pub type ButtonCType<'a> = ButtonType<'a, Gpio37>;
+
+pub type M5GoScreen<'a> = Screen<'a, Gpio27, Gpio33, Gpio32>;
+
+pub type M5GoSpeaker = Speaker<Gpio25, CHANNEL0, TIMER0>;
+
+pub type M5GoScreenDriver<'a> = ScreenDriver<'a, Gpio27, Gpio33>;
+
 pub struct M5Go<'a> {
-    pub button_a: PinDriver<'a, Gpio39, Input>,
-    pub button_b: PinDriver<'a, Gpio38, Input>,
-    pub button_c: PinDriver<'a, Gpio37, Input>,
+    pub button_a: ButtonAType<'a>,
+    pub button_b: ButtonBType<'a>,
+    pub button_c: ButtonCType<'a>,
     pub leds: Leds,
-    pub screen: Screen<'a, Gpio27, Gpio33, Gpio32>,
+    pub screen: M5GoScreen<'a>,
     pub port_a: I2cDriver<'a>,
     pub port_b: IOPort<'a>,
     pub port_c: UartDriver<'a>,
-    pub speaker: Speaker<Gpio25, CHANNEL0, TIMER0>,
+    pub speaker: M5GoSpeaker,
     pub ble: Option<Ble>,
     pub mac: String,
 }

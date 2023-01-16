@@ -15,11 +15,13 @@ use esp_idf_hal::{
 };
 use ili9341::{DisplaySize240x320, Ili9341};
 
+pub type ScreenDriver<'a, DC, RST> = Ili9341<
+    SPIInterfaceNoCS<SpiDeviceDriver<'a, SpiDriver<'a>>, PinDriver<'a, DC, Output>>,
+    PinDriver<'a, RST, Output>,
+>;
+
 pub struct Screen<'a, DC: OutputPin, RST: OutputPin, BL: OutputPin> {
-    pub driver: Ili9341<
-        SPIInterfaceNoCS<SpiDeviceDriver<'a, SpiDriver<'a>>, PinDriver<'a, DC, Output>>,
-        PinDriver<'a, RST, Output>,
-    >,
+    pub driver: ScreenDriver<'a, DC, RST>,
     bl: PinDriver<'a, BL, Output>,
 }
 
